@@ -1,0 +1,24 @@
+/* 半透明水印层样式 */
+.dcmp-watermark {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    opacity: 0.15;
+    font-size: 2rem;
+    color: #888;
+    text-align: center;
+    z-index: 9999;
+    user-select: none;
+    white-space: pre-wrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 多媒体容器样式 */
+.dcmp-media-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 100%;
+} 

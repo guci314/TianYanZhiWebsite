@@ -1,0 +1,1 @@
+<?php require_once "../../../wp-config.php"; require_once "../../../wp-load.php"; if (function_exists("wp_cache_flush")) { wp_cache_flush(); echo "✅ Cache cleared\n"; } flush_rewrite_rules(); echo "✅ Rewrite rules flushed\n"; echo "🎉 Done!\n"; ?>

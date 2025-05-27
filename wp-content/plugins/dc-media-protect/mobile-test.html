@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动端PDF测试 - DC Media Protect</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .device-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007cba;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .feature h3 {
+            margin: 0 0 10px 0;
+            color: #007cba;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 移动端PDF显示修复测试</h1>
+        
+        <div class="device-info">
+            <strong>当前设备信息：</strong>
+            <div id="device-info">正在检测...</div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 测试说明</h3>
+            <ol>
+                <li>本页面用于测试PDF和PPT在移动设备上的显示效果</li>
+                <li>我们已实现针对不同设备的优化方案</li>
+                <li>如果遇到问题，请尝试刷新页面或切换到新窗口查看</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">✅ 已实现的修复功能</div>
+            
+            <div class="features">
+                <div class="feature">
+                    <h3>🍎 iOS设备优化</h3>
+                    <p>• 专门适配Safari浏览器<br>
+                    • 提供原生PDF查看器支持<br>
+                    • 增加新窗口打开选项</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🤖 Android设备优化</h3>
+                    <p>• 集成PDF.js渲染引擎<br>
+                    • 支持页面翻页控制<br>
+                    • 触摸手势滑动支持</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>📱 响应式设计</h3>
+                    <p>• 自动适应屏幕尺寸<br>
+                    • 移动端友好的控制按钮<br>
+                    • 横屏/竖屏自动适配</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🔄 智能回退机制</h3>
+                    <p>• 如果PDF.js加载失败，自动回退到iframe<br>
+                    • 提供下载查看选项<br>
+                    • 显示用户友好的错误提示</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🔧 技术改进详情</div>
+            
+            <h4>1. 移动端检测增强</h4>
+            <ul>
+                <li>更精确的设备类型识别（iOS/Android/其他）</li>
+                <li>浏览器类型检测（Safari/Chrome/Firefox等）</li>
+                <li>针对性的显示方案选择</li>
+            </ul>
+            
+            <h4>2. PDF.js集成</h4>
+            <ul>
+                <li>动态加载PDF.js库（不影响页面加载速度）</li>
+                <li>Canvas渲染，支持缩放和翻页</li>
+                <li>移动端触摸手势支持</li>
+            </ul>
+            
+            <h4>3. CSS响应式优化</h4>
+            <ul>
+                <li>添加了完整的移动端媒体查询</li>
+                <li>优化了触摸目标大小（44px最小尺寸）</li>
+                <li>改进了容器布局和溢出处理</li>
+            </ul>
+            
+            <h4>4. 用户体验提升</h4>
+            <ul>
+                <li>加载状态提示</li>
+                <li>错误处理和友好提示</li>
+                <li>多种查看方式选择</li>
+            </ul>
+        </div>
+        
+        <div class="instructions">
+            <h3>🚀 使用方法</h3>
+            <p><strong>在WordPress文章中使用以下短代码：</strong></p>
+            <pre style="background:#f0f0f0; padding:10px; border-radius:3px; overflow-x:auto;">
+[dc_ppt src="PDF文件地址" width="800" height="600"]
+            </pre>
+            <p><strong>示例：</strong></p>
+            <pre style="background:#f0f0f0; padding:10px; border-radius:3px; overflow-x:auto;">
+[dc_ppt src="/wp-content/uploads/2025/01/document.pdf"]
+            </pre>
+        </div>
+    </div>
+    
+    <script>
+        // 设备信息检测
+        function detectDevice() {
+            const userAgent = navigator.userAgent;
+            const isMobile = /Mobi|Android/i.test(userAgent);
+            const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+            const isAndroid = /Android/i.test(userAgent);
+            const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+            const isChrome = /Chrome/.test(userAgent);
+            const isFirefox = /Firefox/.test(userAgent);
+            
+            let deviceType = '桌面设备';
+            if (isMobile) {
+                if (isIOS) deviceType = 'iOS设备';
+                else if (isAndroid) deviceType = 'Android设备';
+                else deviceType = '其他移动设备';
+            }
+            
+            let browser = '未知浏览器';
+            if (isSafari) browser = 'Safari';
+            else if (isChrome) browser = 'Chrome';
+            else if (isFirefox) browser = 'Firefox';
+            
+            return {
+                deviceType,
+                browser,
+                isMobile,
+                screenWidth: window.screen.width,
+                screenHeight: window.screen.height,
+                viewportWidth: window.innerWidth,
+                viewportHeight: window.innerHeight
+            };
+        }
+        
+        // 显示设备信息
+        function displayDeviceInfo() {
+            const device = detectDevice();
+            const infoElement = document.getElementById('device-info');
+            
+            infoElement.innerHTML = `
+                <strong>设备类型:</strong> ${device.deviceType}<br>
+                <strong>浏览器:</strong> ${device.browser}<br>
+                <strong>屏幕尺寸:</strong> ${device.screenWidth} × ${device.screenHeight}<br>
+                <strong>视口尺寸:</strong> ${device.viewportWidth} × ${device.viewportHeight}<br>
+                <strong>移动设备:</strong> ${device.isMobile ? '是' : '否'}
+            `;
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', displayDeviceInfo);
+        
+        // 窗口大小改变时更新信息
+        window.addEventListener('resize', displayDeviceInfo);
+    </script>
+</body>
+</html> 

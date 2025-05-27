@@ -1,0 +1,124 @@
+/* 半透明水印层样式 */
+.dcmp-watermark {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    opacity: 0.15;
+    font-size: 2rem;
+    color: #888;
+    text-align: center;
+    z-index: 9999;
+    user-select: none;
+    white-space: pre-wrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 多媒体容器样式 */
+.dcmp-media-container {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* PDF容器特殊样式 */
+.dcmp-pdf-container {
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* PDF移动端容器 */
+.dcmp-pdf-mobile-container {
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+/* 移动端响应式样式 */
+@media screen and (max-width: 768px) {
+    .dcmp-watermark {
+        font-size: 1.2rem;
+        opacity: 0.1;
+    }
+    
+    .dcmp-media-container {
+        margin: 10px 0;
+    }
+    
+    .dcmp-pdf-container iframe {
+        min-height: 300px;
+    }
+    
+    .dcmp-pdf-mobile-container {
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* 移动端视频优化 */
+    .dcmp-media-container video {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 60vh;
+    }
+    
+    /* 移动端图片优化 */
+    .dcmp-media-container img {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+    }
+}
+
+/* 超小屏幕适配 */
+@media screen and (max-width: 480px) {
+    .dcmp-watermark {
+        font-size: 1rem;
+        opacity: 0.08;
+    }
+    
+    .dcmp-pdf-mobile-container {
+        margin: 5px 0;
+        border-radius: 6px;
+    }
+    
+    /* 确保PDF控制按钮在小屏幕上可见 */
+    .dcmp-pdf-mobile-container button {
+        font-size: 14px !important;
+        padding: 6px 10px !important;
+        min-width: 40px;
+    }
+}
+
+/* 横屏模式优化 */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .dcmp-pdf-mobile-container {
+        height: 80vh !important;
+    }
+    
+    .dcmp-media-container video {
+        max-height: 80vh;
+    }
+}
+
+/* 防止内容溢出 */
+.dcmp-media-container * {
+    box-sizing: border-box;
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .dcmp-pdf-mobile-container button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .dcmp-pdf-mobile-container a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+} 
