@@ -478,5 +478,4 @@ function dcmp_ajax_get_pdf_info() {
         'file_size' => $content_length,
         'is_pdf' => strpos($content_type, 'pdf') !== false
     ]));
-}
-?> 
+} 
