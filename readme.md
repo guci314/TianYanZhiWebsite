@@ -34,7 +34,7 @@ Apply to enhancedAgen...
 示例代码（PDF.js 集成）：
 Apply to enhancedAgen...
 用法：
-[dc_ppt src="PPT转PDF后的地址.pdf"]
+[dc_ppt src="/wp-content/uploads/2025/05/How-To-Use-AI-Agents-in-2025.pdf"]
 3. 图片、文字展示
 图片水印：上传时用 PHP 处理图片加水印（可用 GD 库或 ImageMagick）。
 前端防下载：禁用右键、拖拽，叠加水印层。

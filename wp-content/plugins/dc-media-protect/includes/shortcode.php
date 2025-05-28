@@ -76,8 +76,11 @@ function dcmp_shortcode_ppt($atts) {
         }
     }
     
-    // 检查是否为本地文件（包括data: URL）
-    $is_local = (strpos($src, home_url()) === 0) || (strpos($src, 'data:') === 0);
+    // 检查是否为本地文件（包括data: URL和相对路径）
+    $is_local = (strpos($src, home_url()) === 0) || 
+                (strpos($src, 'data:') === 0) || 
+                (strpos($src, '/wp-content/') === 0) ||
+                (strpos($src, 'wp-content/') === 0);
     
     $viewer_html = '';
     $container_id = 'dcmp-pdf-' . uniqid();
