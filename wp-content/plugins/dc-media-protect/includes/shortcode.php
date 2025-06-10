@@ -160,11 +160,11 @@ function dcmp_shortcode_ppt($atts) {
                             style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;"
                             onmouseover="this.style.background=\'#1e7e34\'"
                             onmouseout="this.style.background=\'#28a745\'"
-                            title="在新窗口中打开PDF">
+                            title="全屏显示PDF">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
                         </svg>
-                        新窗口
+                        全屏显示
                     </button>
                 </div>
             </div>';
