@@ -1,0 +1,60 @@
+# WordPress核心文件
+wp-admin/
+wp-includes/
+wp-*.php
+xmlrpc.php
+readme.html
+license.txt
+
+# 配置文件
+wp-config.php
+wp-config-local.php
+.htaccess
+
+# 上传文件
+wp-content/uploads/
+wp-content/upgrade/
+
+# 缓存和临时文件
+wp-content/cache/
+wp-content/backup*/
+wp-content/backups/
+wp-content/temp/
+wp-content/wflogs/
+
+# 数据库备份
+*.sql
+*.sql.gz
+
+# 日志文件
+*.log
+error_log
+debug.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE文件
+.vscode/
+.idea/
+*.sublime-*
+
+# 依赖文件
+node_modules/
+vendor/
+
+# 环境变量
+.env
+.env.local
+
+# 其他敏感文件
+wp-salts.php
+wp-keys.php
+
+# Docker相关（可选）
+# docker-compose.override.yml
+# .dockerignore 
