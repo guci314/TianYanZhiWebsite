@@ -28,6 +28,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/upload-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/watermark.php';
 require_once plugin_dir_path(__FILE__) . 'includes/ppt-convert.php';
 require_once plugin_dir_path(__FILE__) . 'includes/shortcode.php';
+
 require_once plugin_dir_path(__FILE__) . 'includes/content-crawler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/mobile-pdf-viewer.php'; 
 

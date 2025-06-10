@@ -65,8 +65,11 @@ function dcmp_shortcode_ppt($atts) {
     // 处理相对路径，确保PDF.js能正确访问
     $processed_src = $src;
     if (strpos($src, 'wp-content/') === 0) {
-        // 如果是相对路径（不以/开头），转换为绝对路径
-        $processed_src = '/' . $src;
+        // 如果是相对路径，转换为完整的URL
+        $processed_src = home_url('/' . $src);
+    } elseif (strpos($src, '/wp-content/') === 0) {
+        // 如果已经是绝对路径，转换为完整URL
+        $processed_src = home_url($src);
     }
     
     // 现在安全地使用esc_url
@@ -93,24 +96,26 @@ function dcmp_shortcode_ppt($atts) {
     } else {
         if ($is_mobile) {
             $w = '100%';
-            $h = '400px';
+            $h = '500px';  // 增加移动端高度
         } else {
             $w = 800;
             $h = 600;
         }
     }
     
-    // 检查是否为本地文件（包括data: URL和相对路径）
+    // 检查是否为本地文件（包括data: URL和相对路径，以及同网段的WordPress上传文件）
     $home_url = home_url();
     $is_local = (strpos($processed_src, $home_url) === 0) || 
                 (strpos($processed_src, 'data:') === 0) || 
                 (strpos($processed_src, '/wp-content/') === 0) ||
-                (strpos($src, 'wp-content/') === 0);  // 检查原始路径中的相对路径
+                (strpos($src, 'wp-content/') === 0) ||  // 检查原始路径中的相对路径
+                (strpos($processed_src, 'wp-content/uploads/') !== false) ||  // 包含uploads路径的URL
+                (strpos($src, 'wp-content/uploads/') !== false);  // 原始路径中的uploads
     
     $viewer_html = '';
     $container_id = 'dcmp-pdf-' . uniqid();
     
-    // 添加详细调试信息
+    // 添加详细调试信息（包括可见的调试框）
     $debug_info .= '<!-- 调试详情: 
         原始路径=' . $src . ' 
         处理后路径=' . $processed_src . ' 
@@ -121,7 +126,10 @@ function dcmp_shortcode_ppt($atts) {
         - data:匹配: ' . (strpos($processed_src, 'data:') === 0 ? 'Yes' : 'No') . '
         - /wp-content/匹配: ' . (strpos($processed_src, '/wp-content/') === 0 ? 'Yes' : 'No') . '
         - 原始wp-content/匹配: ' . (strpos($src, 'wp-content/') === 0 ? 'Yes' : 'No') . '
+        - uploads路径匹配: ' . (strpos($processed_src, 'wp-content/uploads/') !== false ? 'Yes' : 'No') . '
+        - 原始uploads匹配: ' . (strpos($src, 'wp-content/uploads/') !== false ? 'Yes' : 'No') . '
     -->';
+    
     
     if ($is_local) {
         // 检查是否有PDF.js Viewer插件
@@ -129,6 +137,7 @@ function dcmp_shortcode_ppt($atts) {
         
         if ($pdfjs_plugin_exists) {
             // 使用PDF.js Viewer插件的方式，但添加水印和防下载功能
+            // 移动设备也使用PDF.js，现代移动浏览器都支持
             $watermark_text = dcmp_get_watermark_text();
             $nonce = wp_create_nonce('dcmp_pdf_viewer');
             
@@ -143,41 +152,65 @@ function dcmp_shortcode_ppt($atts) {
                          '&pagemode=none' .
                          '&_wpnonce=' . $nonce;
             
-            $viewer_html = '
-            <div class="dcmp-pdf-container" style="position:relative; width:' . (is_numeric($w) ? $w . 'px' : $w) . '; height:' . (is_numeric($h) ? $h . 'px' : $h) . '; border:2px solid #007cba; border-radius:8px; overflow:hidden; background:#f9f9f9;">
-                <!-- PDF查看器iframe -->
+            // 创建新窗口按钮工具栏
+            $fullscreen_link = '
+            <div class="dcmp-fullscreen-toolbar" style="position: relative; margin-bottom: 8px; text-align: right;">
+                <div style="display: inline-flex; background: rgba(0,124,186,0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(0,124,186,0.2);">
+                    <button onclick="window.open(\'' . esc_url($viewer_url) . '\', \'_blank\', \'width=\' + screen.width + \',height=\' + screen.height + \',scrollbars=yes,resizable=yes\')" 
+                            style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;"
+                            onmouseover="this.style.background=\'#1e7e34\'"
+                            onmouseout="this.style.background=\'#28a745\'"
+                            title="在新窗口中打开PDF">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                        </svg>
+                        新窗口
+                    </button>
+                </div>
+            </div>';
+            
+            // 移动端添加额外的下载链接作为备用方案
+            $mobile_fallback = '';
+            if ($is_mobile) {
+                $mobile_fallback = '
+                <div class="dcmp-mobile-fallback" style="position:absolute; top:5px; left:5px; z-index:999998; background:rgba(40,167,69,0.9); color:white; padding:4px 8px; border-radius:4px; font-size:11px;">
+                    <a href="' . esc_url($processed_src) . '" target="_blank" style="color:white; text-decoration:none;">📄 直接打开PDF</a>
+                </div>';
+            }
+            
+            // PDF查看器iframe
+            $viewer_html = $fullscreen_link . '
+            <div class="dcmp-pdf-container" style="position:relative; width:' . (is_numeric($w) ? $w . 'px' : $w) . '; height:' . (is_numeric($h) ? $h . 'px' : $h) . '; border:2px solid #007cba; border-radius:8px; overflow:hidden; background:#f9f9f9; ' . ($is_mobile ? 'min-height:500px;' : '') . '">' . $mobile_fallback . '
                 <iframe src="' . esc_url($viewer_url) . '" 
                         width="100%" 
                         height="100%" 
-                        style="border:none; display:block;" 
+                        style="border:none; display:block; ' . ($is_mobile ? 'min-height:500px;' : '') . '" 
                         title="PDF文档查看器"
-                        sandbox="allow-same-origin allow-scripts allow-forms"
+                        sandbox="allow-same-origin allow-scripts allow-forms allow-downloads allow-popups allow-popups-to-escape-sandbox"
                         oncontextmenu="return false;"
                         class="dcmp-pdf-iframe"></iframe>
                 
-                <!-- 增强水印层 - 确保在最上层 -->
                 <div class="dcmp-watermark-overlay" style="position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:999999 !important; background:repeating-linear-gradient(45deg, transparent, transparent 150px, rgba(0,124,186,0.03) 150px, rgba(0,124,186,0.03) 300px);">
-                    <!-- 右上角主水印 -->
                     <div style="position:absolute; top:15px; right:15px; background:rgba(0,124,186,0.9); color:white; padding:8px 15px; border-radius:6px; font-size:14px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.3); border:2px solid rgba(255,255,255,0.3);">
                         🔒 ' . esc_html($watermark_text) . '
                     </div>
+
                     
-                    <!-- 左下角版权信息 -->
                     <div style="position:absolute; bottom:15px; left:15px; background:rgba(0,124,186,0.9); color:white; padding:6px 12px; border-radius:4px; font-size:12px; box-shadow:0 2px 4px rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.3);">
                         版权保护 - 禁止下载
                     </div>
+
                     
-                    <!-- 中心大水印 -->
                     <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%) rotate(-15deg); font-size:48px; color:rgba(0,124,186,0.1); font-weight:bold; pointer-events:none; user-select:none; text-shadow:2px 2px 4px rgba(0,0,0,0.1);">
                         ' . esc_html($watermark_text) . '
                     </div>
+
                     
-                    <!-- 右下角时间戳 -->
                     <div style="position:absolute; bottom:15px; right:15px; background:rgba(0,124,186,0.8); color:white; padding:4px 8px; border-radius:3px; font-size:10px; opacity:0.8;">
                         ' . date('Y-m-d H:i') . '
                     </div>
+
                     
-                    <!-- 左上角标识 -->
                     <div style="position:absolute; top:15px; left:15px; background:rgba(0,124,186,0.8); color:white; padding:4px 8px; border-radius:3px; font-size:10px; opacity:0.8;">
                         受保护文档
                     </div>
@@ -202,7 +235,6 @@ function dcmp_shortcode_ppt($atts) {
                 z-index: 999999 !important;
                 pointer-events: none !important;
             }
-            /* 防止右键菜单 */
             .dcmp-pdf-container iframe {
                 -webkit-touch-callout: none;
                 -webkit-user-select: none;
@@ -211,7 +243,6 @@ function dcmp_shortcode_ppt($atts) {
                 -ms-user-select: none;
                 user-select: none;
             }
-            /* 确保水印始终在最上层 */
             .dcmp-pdf-container .dcmp-watermark-overlay * {
                 z-index: 999999 !important;
                 position: relative;
@@ -219,46 +250,46 @@ function dcmp_shortcode_ppt($atts) {
             </style>
             
             <script>
-            // 防下载保护脚本
+            
             document.addEventListener("DOMContentLoaded", function() {
-                // 禁用右键菜单
-                document.addEventListener("contextmenu", function(e) {
-                    if (e.target.closest(".dcmp-pdf-container")) {
-                        e.preventDefault();
-                        return false;
-                    }
-                });
+                // 只对PDF容器内的元素应用保护，不影响页面滚动
+                const pdfContainers = document.querySelectorAll(".dcmp-pdf-container");
                 
-                // 禁用拖拽
-                document.addEventListener("dragstart", function(e) {
-                    if (e.target.closest(".dcmp-pdf-container")) {
+                pdfContainers.forEach(function(container) {
+                    // 禁用右键菜单 - 只在PDF容器内
+                    container.addEventListener("contextmenu", function(e) {
                         e.preventDefault();
+                        e.stopPropagation();
                         return false;
-                    }
-                });
-                
-                // 禁用选择
-                document.addEventListener("selectstart", function(e) {
-                    if (e.target.closest(".dcmp-pdf-container")) {
+                    });
+                    
+                    // 禁用拖拽 - 只在PDF容器内  
+                    container.addEventListener("dragstart", function(e) {
                         e.preventDefault();
+                        e.stopPropagation();
                         return false;
-                    }
-                });
-                
-                // 禁用快捷键
-                document.addEventListener("keydown", function(e) {
-                    if (e.target.closest(".dcmp-pdf-container")) {
-                        // 禁用 Ctrl+S (保存), Ctrl+P (打印), Ctrl+A (全选), F12 (开发者工具)
+                    });
+                    
+                    // 禁用选择 - 只在PDF容器内
+                    container.addEventListener("selectstart", function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    });
+                    
+                    // 禁用快捷键 - 只在PDF容器获得焦点时
+                    container.addEventListener("keydown", function(e) {
                         if ((e.ctrlKey && (e.key === "s" || e.key === "p" || e.key === "a")) || e.key === "F12") {
                             e.preventDefault();
+                            e.stopPropagation();
                             return false;
                         }
-                    }
+                    });
                 });
             });
             </script>';
             
-            $debug_info .= '<!-- 调试: 使用PDF.js Viewer插件 + 水印保护 -->';
+            $debug_info .= '<!-- 调试: 使用PDF.js Viewer插件 + 水印保护 (移动端兼容) -->';
         } else {
             // PDF.js插件不存在，使用原有的移动端优化方案
             if ($is_mobile) {
@@ -393,6 +424,53 @@ function dcmp_shortcode_ppt($atts) {
             position: absolute !important;
             z-index: 999999 !important;
             pointer-events: none !important;
+        }
+        /* 全屏按钮工具栏样式 */
+        .dcmp-fullscreen-toolbar {
+            position: relative !important;
+            z-index: 1000 !important;
+            margin-bottom: 8px !important;
+        }
+        .dcmp-fullscreen-toolbar button {
+            background: #007cba !important;
+            color: white !important;
+            border: none !important;
+            padding: 10px 16px !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+            transition: all 0.2s !important;
+            vertical-align: top !important;
+        }
+        .dcmp-fullscreen-toolbar button:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        .dcmp-fullscreen-toolbar button svg {
+            width: 16px !important;
+            height: 16px !important;
+            fill: currentColor !important;
+        }
+        /* 全屏时的样式 */
+        .dcmp-pdf-container iframe:fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            border: none !important;
+        }
+        .dcmp-pdf-container iframe:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            border: none !important;
+        }
+        .dcmp-pdf-container iframe:-moz-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            border: none !important;
         }
         </style>';
 }

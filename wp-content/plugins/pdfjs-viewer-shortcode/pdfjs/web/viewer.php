@@ -319,6 +319,10 @@ See https://github.com/adobe-type-tools/cmap-resources
                             <span data-l10n-id="pdfjs-save-button-label">Save</span>
                         </button>
 
+                        <button id="customFullscreen" class="toolbarButton" title="进入全屏模式（支持手势缩放）" tabindex="43" style="background: #28a745; color: white; margin-left: 10px; border-radius: 4px;">
+                            <span>🔳 全屏</span>
+                        </button>
+
                         <div class="verticalToolbarSeparator hiddenMediumView"></div>
 
                         <button id="secondaryToolbarToggle" class="toolbarButton" title="Tools" tabindex="43" data-l10n-id="pdfjs-tools-button" aria-expanded="false" aria-controls="secondaryToolbar">
@@ -504,5 +508,83 @@ See https://github.com/adobe-type-tools/cmap-resources
 
 </div> <!-- outerContainer -->
 <div id="printContainer"></div>
+
+<script>
+// 自定义全屏按钮功能
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🔍 PDF.js 全屏按钮初始化");
+    
+    const fullscreenBtn = document.getElementById('customFullscreen');
+    if (fullscreenBtn) {
+        console.log("✅ 找到全屏按钮");
+        
+        fullscreenBtn.addEventListener('click', function() {
+            console.log("🚀 自定义全屏按钮被点击");
+            
+            // 检测微信浏览器，避免使用容易崩溃的API
+            const userAgent = navigator.userAgent || '';
+            const isWeChat = userAgent.indexOf('MicroMessenger') !== -1;
+            const isQQ = userAgent.indexOf('QQBrowser') !== -1 || userAgent.indexOf('MQQBrowser') !== -1;
+            
+            if (isWeChat || isQQ) {
+                // 微信或QQ浏览器：直接在新窗口打开，避免使用全屏API
+                console.log("检测到微信/QQ浏览器，使用新窗口方式");
+                const currentUrl = window.location.href;
+                const fullscreenWindow = window.open(currentUrl, '_blank');
+                
+                if (!fullscreenWindow) {
+                    alert("❌ 无法打开新窗口\\n\\n可能被浏览器的弹窗拦截器阻止了");
+                } else {
+                    console.log("✅ 已在新窗口打开");
+                }
+            } else {
+                // 其他浏览器：尝试使用parent window的全屏功能（避免直接操作iframe）
+                try {
+                    // 如果在iframe中，尝试通知父窗口
+                    if (window.parent && window.parent !== window) {
+                        console.log("在iframe中，尝试通知父窗口全屏");
+                        // 发送消息给父窗口，让父窗口处理全屏
+                        window.parent.postMessage({
+                            type: 'requestFullscreen',
+                            source: 'pdfjs-viewer'
+                        }, '*');
+                    } else {
+                        // 不在iframe中，在新窗口打开
+                        console.log("不在iframe中，在新窗口打开");
+                        const currentUrl = window.location.href;
+                        const fullscreenWindow = window.open(currentUrl, '_blank');
+                        
+                        if (!fullscreenWindow) {
+                            alert("❌ 无法打开新窗口\\n\\n可能被浏览器的弹窗拦截器阻止了");
+                        }
+                    }
+                } catch (err) {
+                    console.log("全屏操作失败，回退到新窗口:", err);
+                    // 回退方案：新窗口打开
+                    const currentUrl = window.location.href;
+                    window.open(currentUrl, '_blank');
+                }
+            }
+        });
+    } else {
+        console.error("❌ 没有找到全屏按钮");
+    }
+    
+    // 检测是否在新窗口中（全屏模式）
+    if (window.opener) {
+        console.log("✅ 检测到这是全屏窗口");
+        // 在新窗口中隐藏侧边栏以获得更大的PDF显示区域
+        const sidebarContainer = document.getElementById('sidebarContainer');
+        const mainContainer = document.getElementById('mainContainer');
+        if (sidebarContainer) {
+            sidebarContainer.style.display = 'none';
+        }
+        if (mainContainer) {
+            mainContainer.style.left = '0';
+            mainContainer.style.width = '100%';
+        }
+    }
+});
+</script>
 </body>
 </html>
