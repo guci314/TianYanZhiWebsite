@@ -584,6 +584,252 @@ document.addEventListener('DOMContentLoaded', function() {
             mainContainer.style.width = '100%';
         }
     }
+    
+    // DC Media Protect 保护检测
+    const urlParams = new URLSearchParams(window.location.search);
+    const isProtected = urlParams.get('dcmp_protected') === '1';
+    const watermarkText = decodeURIComponent(urlParams.get('dcmp_watermark') || '数字中国');
+    const isMobile = urlParams.get('mobile') === '1';
+    
+    console.log("📱 移动端模式:", isMobile);
+    
+    if (isProtected) {
+        console.log("🔒 DC Media Protect 保护模式已启用");
+        console.log("⚠️ 此文档受版权保护，禁止下载或复制！");
+        
+        // 创建强化的水印覆盖层
+        const protectionOverlay = document.createElement('div');
+        protectionOverlay.id = 'dcmp-protection-overlay';
+        protectionOverlay.style.cssText = `
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 999999;
+            background: repeating-linear-gradient(45deg, 
+                transparent, transparent 150px, 
+                rgba(255,0,0,0.02) 150px, rgba(255,0,0,0.02) 300px);
+        `;
+        
+        // 右上角水印
+        const topRightWatermark = document.createElement('div');
+        topRightWatermark.style.cssText = `
+            position: absolute;
+            top: 15px; right: 15px;
+            background: rgba(255,0,0,0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.3);
+            z-index: 1000000;
+            pointer-events: none;
+        `;
+        topRightWatermark.textContent = '🔒 ' + watermarkText;
+        
+        // 左下角保护提示
+        const bottomLeftNotice = document.createElement('div');
+        bottomLeftNotice.style.cssText = `
+            position: absolute;
+            bottom: 15px; left: 15px;
+            background: rgba(255,0,0,0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 1000000;
+            pointer-events: none;
+        `;
+        bottomLeftNotice.textContent = '⚠️ 受保护文档 - 禁止下载';
+        
+        // 中央大水印
+        const centerWatermark = document.createElement('div');
+        centerWatermark.style.cssText = `
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 60px;
+            color: rgba(255,0,0,0.06);
+            font-weight: bold;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000000;
+        `;
+        centerWatermark.textContent = watermarkText;
+        
+        // 移动端返回按钮
+        let mobileBackButton = null;
+        if (isMobile) {
+            mobileBackButton = document.createElement('div');
+            mobileBackButton.style.cssText = `
+                position: fixed;
+                top: 15px; left: 15px;
+                background: #6c757d;
+                color: white;
+                padding: 12px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                z-index: 1000001;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                pointer-events: auto;
+                user-select: none;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            `;
+            mobileBackButton.innerHTML = '← 返回';
+            mobileBackButton.addEventListener('click', function() {
+                console.log("📱 移动端返回按钮被点击");
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.close();
+                }
+            });
+            mobileBackButton.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                console.log("📱 移动端返回按钮触摸事件");
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.close();
+                }
+            });
+        }
+        
+        // 组装水印层
+        protectionOverlay.appendChild(topRightWatermark);
+        protectionOverlay.appendChild(bottomLeftNotice);
+        protectionOverlay.appendChild(centerWatermark);
+        if (mobileBackButton) {
+            protectionOverlay.appendChild(mobileBackButton);
+        }
+        document.body.appendChild(protectionOverlay);
+        
+        // 强化保护措施
+        const protectionMeasures = {
+            // 禁用右键菜单
+            contextMenu: function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert("⚠️ 此文档受版权保护，禁止复制或下载！");
+                return false;
+            },
+            
+            // 禁用快捷键
+            keydown: function(e) {
+                // 禁用保存、打印、复制等快捷键
+                if ((e.ctrlKey || e.metaKey) && (
+                    e.key === 's' || e.key === 'S' ||  // 保存
+                    e.key === 'p' || e.key === 'P' ||  // 打印
+                    e.key === 'a' || e.key === 'A' ||  // 全选
+                    e.key === 'c' || e.key === 'C' ||  // 复制
+                    e.key === 'x' || e.key === 'X' ||  // 剪切
+                    e.key === 'v' || e.key === 'V'     // 粘贴
+                )) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert("⚠️ 此操作已被禁用，文档受版权保护！");
+                    return false;
+                }
+                
+                // 禁用开发者工具
+                if (e.key === 'F12' || 
+                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            },
+            
+            // 禁用拖拽
+            dragstart: function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            },
+            
+            // 禁用选择
+            selectstart: function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        };
+        
+        // 绑定保护事件
+        document.addEventListener('contextmenu', protectionMeasures.contextMenu, true);
+        document.addEventListener('keydown', protectionMeasures.keydown, true);
+        document.addEventListener('dragstart', protectionMeasures.dragstart, true);
+        document.addEventListener('selectstart', protectionMeasures.selectstart, true);
+        
+        // 禁用F12开发者工具检测
+        let devtools = { open: false, orientation: null };
+        const threshold = 160;
+        
+        setInterval(function() {
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devtools.open) {
+                    devtools.open = true;
+                    alert("⚠️ 检测到开发者工具，为保护版权，页面功能将受限！");
+                    // 可以选择关闭窗口或重定向
+                    // window.close();
+                }
+            } else {
+                devtools.open = false;
+            }
+        }, 500);
+        
+        // 禁用打印功能
+        window.print = function() {
+            alert("⚠️ 此文档受版权保护，不允许打印！");
+            return false;
+        };
+        
+        // 监听PDF.js的工具栏按钮点击
+        document.addEventListener('click', function(e) {
+            const target = e.target;
+            
+            // 检查是否点击了下载、打印等按钮
+            if (target.id === 'download' || target.id === 'secondaryDownload' ||
+                target.id === 'print' || target.id === 'secondaryPrint' ||
+                target.id === 'openFile' || target.id === 'secondaryOpenFile') {
+                e.preventDefault();
+                e.stopPropagation();
+                alert("⚠️ 此操作已被禁用，文档受版权保护！");
+                return false;
+            }
+        }, true);
+        
+        // 防止通过浏览器地址栏直接访问PDF文件
+        const iframe = document.querySelector('iframe');
+        if (iframe) {
+            iframe.addEventListener('load', function() {
+                try {
+                    // 尝试在iframe中也应用保护
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc) {
+                        iframeDoc.addEventListener('contextmenu', protectionMeasures.contextMenu);
+                        iframeDoc.addEventListener('keydown', protectionMeasures.keydown);
+                    }
+                } catch (e) {
+                    // 跨域访问限制，这是正常的
+                    console.log("无法访问iframe内容（跨域限制）");
+                }
+            });
+        }
+        
+        // 添加版权声明到控制台
+        console.log("%c⚠️ 版权保护警告", "color: red; font-size: 16px; font-weight: bold;");
+        console.log("%c此PDF文档受版权保护，由DC Media Protect插件提供技术支持。", "color: red;");
+        console.log("%c任何未经授权的下载、复制、打印行为都是被禁止的。", "color: red;");
+    }
 });
 </script>
 </body>

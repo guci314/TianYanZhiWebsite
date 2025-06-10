@@ -150,22 +150,38 @@ function dcmp_shortcode_ppt($atts) {
                          '&oButton=false' .  // 禁用打开文件按钮
                          '&sButton=true' .   // 保留搜索按钮
                          '&pagemode=none' .
+                         '&dcmp_protected=1' .  // 标记为受保护的查看器
+                         '&dcmp_watermark=' . urlencode($watermark_text) .  // 传递水印文本
                          '&_wpnonce=' . $nonce;
             
-            // 创建新窗口按钮工具栏
+            // 创建全屏功能的JavaScript字符串（用于onclick）
+            $fullscreen_js = 'dcmpOpenProtectedFullscreen(\'' . esc_js($viewer_url) . '\', \'' . esc_js($watermark_text) . '\');';
+            
+            // 创建新窗口按钮工具栏 - 修改为受保护的全屏查看
+            $protected_fullscreen_id = 'dcmp-protected-fullscreen-' . uniqid();
+            
+            // 移动端显示不同的提示文字
+            $mobile_hint = $is_mobile ? '📱 点击跳转到全屏页面' : '💻 点击打开安全窗口';
+            $button_text = $is_mobile ? '🔒 全屏查看 →' : '🔒 安全全屏查看';
+            
             $fullscreen_link = '
             <div class="dcmp-fullscreen-toolbar" style="position: relative; margin-bottom: 8px; text-align: right;">
-                <div style="display: inline-flex; background: rgba(0,124,186,0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(0,124,186,0.2);">
-                    <button onclick="window.open(\'' . esc_url($viewer_url) . '\', \'_blank\', \'width=\' + screen.width + \',height=\' + screen.height + \',scrollbars=yes,resizable=yes\')" 
-                            style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;"
-                            onmouseover="this.style.background=\'#1e7e34\'"
-                            onmouseout="this.style.background=\'#28a745\'"
-                            title="全屏显示PDF">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <div style="display: inline-flex; background: rgba(40,167,69,0.15); padding: 12px; border-radius: 8px; border: 2px solid #28a745; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                    <button id="' . $protected_fullscreen_id . '" 
+                            style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 14px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(40,167,69,0.4); transition: all 0.3s; transform: scale(1.02);"
+                            onmouseover="this.style.background=\'linear-gradient(135deg, #1e7e34, #1abc9c)\'; this.style.transform=\'scale(1.05)\';"
+                            onmouseout="this.style.background=\'linear-gradient(135deg, #28a745, #20c997)\'; this.style.transform=\'scale(1.02)\';"
+                            title="' . esc_attr($mobile_hint) . '"
+                            onclick="console.log(\'🎯 安全全屏按钮被点击了！\'); ' . $fullscreen_js . ' return false;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
                         </svg>
-                        全屏显示
+                        ' . $button_text . '
                     </button>
+                    <div style="margin-left: 12px; color: #28a745; font-size: 12px; display: flex; flex-direction: column; justify-content: center;">
+                        <div style="font-weight: bold;">✨ 推荐使用</div>
+                        <div>' . ($is_mobile ? '移动优化' : '受保护查看') . '</div>
+                    </div>
                 </div>
             </div>';
             
@@ -246,50 +262,55 @@ function dcmp_shortcode_ppt($atts) {
             .dcmp-pdf-container .dcmp-watermark-overlay * {
                 z-index: 999999 !important;
                 position: relative;
-            }
-            </style>
-            
-            <script>
-            
-            document.addEventListener("DOMContentLoaded", function() {
-                // 只对PDF容器内的元素应用保护，不影响页面滚动
-                const pdfContainers = document.querySelectorAll(".dcmp-pdf-container");
-                
-                pdfContainers.forEach(function(container) {
-                    // 禁用右键菜单 - 只在PDF容器内
-                    container.addEventListener("contextmenu", function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    });
-                    
-                    // 禁用拖拽 - 只在PDF容器内  
-                    container.addEventListener("dragstart", function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    });
-                    
-                    // 禁用选择 - 只在PDF容器内
-                    container.addEventListener("selectstart", function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    });
-                    
-                    // 禁用快捷键 - 只在PDF容器获得焦点时
-                    container.addEventListener("keydown", function(e) {
-                        if ((e.ctrlKey && (e.key === "s" || e.key === "p" || e.key === "a")) || e.key === "F12") {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            return false;
-                        }
-                    });
-                });
-            });
-            </script>';
-            
-            $debug_info .= '<!-- 调试: 使用PDF.js Viewer插件 + 水印保护 (移动端兼容) -->';
+                         }
+             </style>
+             ';
+             
+             $debug_info .= '<!-- 调试: 使用PDF.js Viewer插件 + 水印保护 (移动端兼容) -->';
+             $debug_info .= '<!-- 安全全屏按钮ID: ' . $protected_fullscreen_id . ' -->';
+             
+             // 移动端和桌面端JavaScript注入
+             wp_add_inline_script('dcmp-frontend', '
+                 jQuery(document).ready(function() {
+                     console.log("✅ DC Media Protect JavaScript已加载");
+                     var btn = document.getElementById("' . $protected_fullscreen_id . '");
+                     if (btn) {
+                         console.log("🎯 找到安全全屏按钮");
+                         
+                         // 检测移动设备
+                         var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                         console.log("📱 移动设备检测:", isMobile);
+                         
+                         btn.addEventListener("click", function(e) {
+                             e.preventDefault();
+                             console.log("🔥 安全全屏按钮被点击！设备:", isMobile ? "移动端" : "桌面端");
+                             
+                             if (isMobile) {
+                                 // 移动端：直接在当前标签页中打开
+                                 console.log("📱 移动端：在当前标签页打开全屏查看器");
+                                 window.location.href = "' . esc_js($fullscreen_url) . '&mobile=1&watermark=" + encodeURIComponent("' . esc_js($watermark_text) . '");
+                             } else {
+                                 // 桌面端：使用弹窗
+                                 console.log("💻 桌面端：使用弹窗全屏查看器");
+                                 dcmpOpenProtectedFullscreen("' . esc_js($fullscreen_url) . '", "' . esc_js($watermark_text) . '");
+                             }
+                             return false;
+                         });
+                         
+                         // 移动端专用：添加触摸事件
+                         if (isMobile) {
+                             btn.addEventListener("touchend", function(e) {
+                                 e.preventDefault();
+                                 console.log("📱 移动端触摸事件触发");
+                                 window.location.href = "' . esc_js($fullscreen_url) . '&mobile=1&watermark=" + encodeURIComponent("' . esc_js($watermark_text) . '");
+                                 return false;
+                             });
+                         }
+                     } else {
+                         console.warn("❌ 未找到安全全屏按钮");
+                     }
+                 });
+             ');
         } else {
             // PDF.js插件不存在，使用原有的移动端优化方案
             if ($is_mobile) {

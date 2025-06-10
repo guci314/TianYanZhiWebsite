@@ -33,8 +33,14 @@ require_once plugin_dir_path(__FILE__) . 'includes/content-crawler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/mobile-pdf-viewer.php'; 
 
 add_action('wp_enqueue_scripts', function() {
-    wp_enqueue_script('dcmp-frontend', plugins_url('assets/js/frontend.js', __FILE__), [], '1.0.0', true);
-    wp_enqueue_style('dcmp-style', plugins_url('assets/css/style.css', __FILE__), [], '1.0.0');
+    // 确保jQuery先加载，然后加载我们的脚本
+    wp_enqueue_script('dcmp-frontend', plugins_url('assets/js/frontend.js', __FILE__), ['jquery'], '1.0.7', true);
+    wp_enqueue_style('dcmp-style', plugins_url('assets/css/style.css', __FILE__), [], '1.0.7');
+    
+    // 添加调试信息
+    if (WP_DEBUG) {
+        wp_add_inline_script('dcmp-frontend', 'console.log("🔧 DC Media Protect scripts loaded");', 'after');
+    }
 }); 
 
 if (is_admin()) {

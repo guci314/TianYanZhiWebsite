@@ -156,86 +156,7 @@ function dcmp_generate_wechat_miui_pdf_viewer($pdf_url, $width, $height, $contai
             💡 提示：微信内置浏览器对PDF支持有限，建议在外部浏览器打开
         </div>
     </div>
-    
-    <script>
-    function dcmpOpenInDefaultApp(url) {
-        // 尝试唤起系统默认应用
-        const link = document.createElement("a");
-        link.href = url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        setTimeout(() => {
-            alert("如果PDF没有打开，请：\\n1. 长按上方链接选择\\"用其他应用打开\\"\\n2. 安装WPS Office或其他PDF阅读器\\n3. 复制链接到浏览器打开");
-        }, 1000);
-    }
-    
-    function dcmpCopyLink(url) {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(url).then(() => {
-                alert("✅ PDF链接已复制！\\n请粘贴到浏览器地址栏打开");
-            }).catch(() => {
-                dcmpFallbackCopyTextToClipboard(url);
-            });
-        } else {
-            dcmpFallbackCopyTextToClipboard(url);
-        }
-    }
-    
-    function dcmpFallbackCopyTextToClipboard(text) {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.width = "2em";
-        textArea.style.height = "2em";
-        textArea.style.padding = "0";
-        textArea.style.border = "none";
-        textArea.style.outline = "none";
-        textArea.style.boxShadow = "none";
-        textArea.style.background = "transparent";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        
-        try {
-            const successful = document.execCommand("copy");
-            if (successful) {
-                alert("✅ PDF链接已复制！\\n请粘贴到浏览器地址栏打开");
-            } else {
-                alert("❌ 复制失败，请手动复制链接：\\n" + text);
-            }
-        } catch (err) {
-            alert("❌ 复制失败，请手动复制链接：\\n" + text);
-        }
-        
-        document.body.removeChild(textArea);
-    }
-    
-    function dcmpIframeLoaded(containerId) {
-        const loading = document.getElementById(containerId + "-loading");
-        if (loading) loading.style.display = "none";
-    }
-    
-    function dcmpIframeError(containerId) {
-        const container = document.getElementById(containerId + "-iframe-container");
-        const loading = document.getElementById(containerId + "-loading");
-        if (loading) loading.style.display = "none";
-        if (container) {
-            container.innerHTML = `
-                <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; flex-direction:column;">
-                    <div style="font-size:24px; margin-bottom:10px;">❌</div>
-                    <div>微信浏览器暂不支持直接显示PDF</div>
-                    <div style="font-size:12px; margin-top:5px;">请使用上方按钮打开</div>
-                </div>
-            `;
-        }
-    }
-    </script>';
+    ';
 }
 
 // 微信浏览器PDF查看器 (通用微信)
@@ -334,58 +255,7 @@ function dcmp_generate_chinese_browser_pdf_viewer($pdf_url, $width, $height, $co
             如遇显示问题，建议使用系统自带浏览器或Chrome浏览器
         </div>
     </div>
-    
-    <script>
-    // PDF iframe加载处理
-    function dcmpIframeLoaded(containerId) {
-        const loading = document.getElementById(containerId + "-loading");
-        if (loading) loading.style.display = "none";
-    }
-    
-    function dcmpIframeError(containerId) {
-        const container = document.getElementById(containerId + "-iframe-container");
-        const loading = document.getElementById(containerId + "-loading");
-        if (loading) loading.style.display = "none";
-        if (container) {
-            container.innerHTML = `
-                <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; flex-direction:column;">
-                    <div style="font-size:24px; margin-bottom:10px;">❌</div>
-                    <div>该浏览器暂不支持直接显示PDF</div>
-                    <div style="font-size:12px; margin-top:5px;">请使用下方按钮打开</div>
-                </div>
-            `;
-        }
-    }
-    
-    // 替代方案
-    function dcmpTryAlternative(containerId, pdfUrl) {
-        const container = document.getElementById(containerId + "-iframe-container");
-        if (container) {
-            container.innerHTML = `
-                <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; flex-direction:column; padding:20px;">
-                    <div style="font-size:24px; margin-bottom:15px;">📋</div>
-                    <div style="text-align:center; line-height:1.4;">
-                        <div style="margin-bottom:10px;">尝试以下解决方案：</div>
-                        <div style="font-size:12px; color:#999;">
-                            1. 长按PDF链接选择"用其他应用打开"<br>
-                            2. 安装WPS、福昕等PDF阅读器<br>
-                            3. 使用Chrome或Firefox浏览器
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-    }
-    
-    // 3秒后检查iframe是否加载成功
-    setTimeout(function() {
-        const iframe = document.getElementById("' . $container_id . '-iframe");
-        const loading = document.getElementById("' . $container_id . '-loading");
-        if (iframe && loading && loading.style.display !== "none") {
-            dcmpIframeError("' . $container_id . '");
-        }
-    }, 3000);
-    </script>';
+    ';
 }
 
 // Android PDF查看器 (PDF.js)
@@ -412,16 +282,7 @@ function dcmp_generate_android_pdf_viewer($pdf_url, $width, $height, $container_
                 下一页 ▶
             </button>
         </div>
-    </div>
-    <script>
-    window.dcmpPdfData = window.dcmpPdfData || {};
-    window.dcmpPdfData["' . $container_id . '"] = {
-        url: "' . $pdf_url . '",
-        currentPage: 1,
-        totalPages: 1,
-        pdfDoc: null
-    };
-    </script>';
+    </div>';
 }
 
 // 通用PDF查看器
